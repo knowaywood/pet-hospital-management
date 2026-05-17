@@ -1,0 +1,31 @@
+{
+  "name": "pet-hospital",
+  "version": "1.0.0",
+  "description": "宠物医院管理系统",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-vite build && electron-builder"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "drizzle-orm": "^0.45.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "drizzle-kit": "^0.31.10",
+    "electron": "^34.5.8",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^3.1.0",
+    "typescript": "^6.0.3",
+    "vite": "^6.4.2"
+  }
+}

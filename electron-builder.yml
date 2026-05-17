@@ -1,0 +1,10 @@
+appId: com.pethospital.app
+productName: 宠物医院管理系统
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+linux:
+  target:
+    - AppImage
