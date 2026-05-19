@@ -1,6 +1,7 @@
 appId: com.pethospital.app
 productName: 宠物医院管理系统
 copyright: Copyright © 2026
+publish: null
 directories:
   buildResources: build
   output: dist
