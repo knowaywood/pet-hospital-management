@@ -126,6 +126,7 @@ git push origin v1.0.0
 
 - [ ] 办卡业务
 - [ ] 用药回访pipline
+- [ ] 回访信息format
 - [ ] Node.js 服务端 + PostgreSQL
 - [ ] 自动短信发送（阿里云/腾讯云 SMS）
 - [ ] A/B 电脑数据同步
