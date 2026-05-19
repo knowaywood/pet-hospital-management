@@ -7,7 +7,10 @@ directories:
 files:
   - out/**/*
   - package.json
+  - node_modules/better-sqlite3/**/*
 asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**
 linux:
   target:
     - AppImage
