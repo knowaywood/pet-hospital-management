@@ -5,7 +5,7 @@
   "author": "pet-hospital",
   "main": "./out/main/index.js",
   "scripts": {
-    "postinstall": "@electron/rebuild -m . -o better-sqlite3",
+    "postinstall": "npx @electron/rebuild -m . -o better-sqlite3",
     "build:main": "node esbuild.main.mjs",
     "build:preload": "node esbuild.preload.mjs",
     "build:renderer": "vite build --config vite.renderer.config.ts",
