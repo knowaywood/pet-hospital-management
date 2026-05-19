@@ -25,10 +25,9 @@ win:
     - nsis
     - portable
 nsis:
-  oneClick: false
+  oneClick: true
   perMachine: false
-  allowToChangeInstallationDirectory: true
-  allowElevation: true
+  runAfterFinish: false
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: 宠物医院管理

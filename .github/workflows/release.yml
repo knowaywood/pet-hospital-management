@@ -49,6 +49,7 @@ jobs:
             dist/*.AppImage
             dist/*.dmg
             dist/*.exe
+            dist/*.zip
 
   release:
     needs: build
@@ -62,6 +63,7 @@ jobs:
           files: |
             pet-hospital-linux/*.AppImage
             pet-hospital-win/*.exe
+            pet-hospital-win/*.zip
             pet-hospital-mac/*.dmg
           generate_release_notes: true
         env:
