@@ -1,104 +1,132 @@
 # 宠物医院管理系统
 
+桌面版宠物医院管理软件，Electron + React + SQLite。
+
 ## 技术栈
 
 | 层 | 技术 |
 |----|------|
 | 桌面壳 | Electron |
 | 前端 | React 19 + TypeScript + Vite |
-| UI 库 | Ant Design |
-| 状态管理 | zustand |
-| 路由 | React Router |
-| 本地数据库 | SQLite (better-sqlite3) |
+| UI | Ant Design |
+| 状态 | zustand |
+| 路由 | React Router (HashRouter) |
+| 数据库 | SQLite (better-sqlite3) |
 | ORM | drizzle-orm |
+| PDF | pdfjs-dist |
 | 打包 | electron-builder |
+| CI/CD | GitHub Actions |
 
-## 架构
+## 导航
 
+| 菜单 | 功能 |
+|------|------|
+| 工作台 | 统计卡片（可点击跳转） + 回访提醒列表 + 医院设置 |
+| 预约就诊 | 日历视图 + 当日预约列表 + 就诊工作区（诊断/处方/附件/费用） |
+| 客户管理 | 客户 CRUD + 搜索 + 内嵌宠物档案 + 就诊时间线 + 账单 + 回访提醒 |
+| 药品库存 | 药品/服务管理 + 入库/流水 + 库存追溯 |
+| 收费结算 | 按日期分组 + 收款/撤销 + 点击追溯到就诊详情 |
+
+## 数据库（12 张表）
+
+| 表 | 用途 |
+|----|------|
+| owners | 客户（电话唯一） |
+| pets | 宠物档案 |
+| appointments | 预约（5 种类型 + 状态流转） |
+| medical_records | 诊疗记录（诊断/处方 JSON/费用） |
+| medicines | 药品 + 服务（is_service 无限库存） |
+| bills | 账单 |
+| bill_items | 账单明细 |
+| vaccines | 疫苗接种（自动创建回访提醒） |
+| reminders | 回访提醒 |
+| attachments | 附件（标题 + 缩略图 + 原图） |
+| inventory_logs | 库存流水（可追溯） |
+| settings | 医院设置（名称/电话/地址） |
+
+## 核心功能
+
+### 就诊工作流
 ```
-React 组件
-   ↓ 调用 Repository 接口
-Repository 实现
-   ↓ (当前) local.ts → IPC → SQLite
-   ↓ (将来) remote.ts → fetch → Node.js 服务端
+日历 → 点预约 → 就诊 Drawer
+                  ├── 诊断
+                  ├── 处方（搜索药品自动补全 / 自定义药品）
+                  ├── 附件（拖入图片/PDF → 自动转 JPEG + 缩略图）
+                  ├── 费用（自动合计 → 生成账单）
+                  └── 新建回访提醒
 ```
 
-Repository 模式：前端只依赖接口约定，底层实现可随时切换。
+### 处方
+- 药品搜索 AutoComplete，库存药品选中后规格/单价自动填
+- 自定义药品可手动输入名称/规格/单位/单价
+- 上次处方自动加载为模板，可一键清空
+- 库存药品自动扣减，服务类型不扣
 
-## 数据库表
+### 附件
+- 拖入图片 → Canvas 生成缩略图 → 存磁盘 + DB 记录
+- 拖入 PDF → pdfjs-dist 逐页渲染 JPEG → 每页独立保存
+- 上传时可选输入标题（默认取文件名）
+- 缩略图网格展示，点击放大原图，可删除
 
-| 表名 | 用途 | 状态 |
-|------|------|------|
-| owners | 客户 | 已完成 |
-| pets | 宠物档案 | 已完成 |
-| appointments | 预约挂号 | 已完成 |
-| medical_records | 诊疗记录 | 已完成 |
-| medicines | 药品库存 | 已完成 |
-| bills | 账单 | 已完成 |
-| bill_items | 账单明细 | 已完成 |
-| vaccines | 疫苗接种记录 | 待添加 |
-| reminders | 回访提醒 | 待添加 |
+### 回访提醒
+- 工作台 / 客户详情 / 就诊工作区 均可创建
+- 填**天数**代替选日期（如「7 天后」）
+- 仅到期前 3 天内显示在工作台
+- 疫苗录入时自动创建到期提醒
+- 一键复制短信文案（使用医院设置中的名称/电话）
 
-## 业务模块
+### 库存追溯
+- 库存流水每行可点击
+- 开药出库 → 追溯到关联病历 + 预约 + 账单
+- 入库/盘调 → 显示流水详情 + 药品信息
 
-| 模块 | 说明 | 交互方式 |
-|------|------|---------|
-| 工作台 | 今日概览 + 到期提醒 | 只读 |
-| 客户管理 | 客户增删改查，详情汇总宠物+预约+账单 | Modal 弹窗 |
-| 宠物档案 | 按客户展示宠物列表，就诊时间线 | 客户页内嵌 + Modal |
-| 预约挂号 | 治疗/美容/洗澡/疫苗 多类型预约 | 页面跳转 |
-| 诊疗记录 | 诊断/处方/费用，按宠物查看 | Drawer 右侧面板 |
-| 药品库存 | 入库/出库/低库存预警 | Modal 弹窗 |
-| 收费结算 | 账单创建/收款 | Modal 弹窗 |
+### 账单
+- 完成就诊自动生成账单
+- 收款支持部分/全额
+- 撤销账单同步取消关联预约
+- 点击账单 → 当前页展开就诊详情（含客户/宠物/病历/附件）
 
-## 预约类型
+### 时间管理
+- 所有 `created_at` 统一为 INTEGER 毫秒时间戳
+- 用户日期字段（预约时间/接种日期等）保持 TEXT 可读格式
+- 启动时自动迁移旧 TEXT 数据
 
-- 治疗 (treatment)
-- 宠物美容 (grooming)
-- 洗澡 (bath)
-- 疫苗接种 (vaccination)
-- 其他 (other)
+## 路由
 
-## TODO: 待办事项
-
-### 即将完成
-
-- [ ] 重构 App.tsx — React Router + Ant Design 布局 + 面包屑 + 左侧导航
-- [ ] 创建 zustand store（currentOwner、currentPet）
-- [ ] 工作台页面（真实数据驱动）
-- [ ] 客户管理完整页面（Table + Modal + 详情汇总）
-- [ ] 宠物档案页面（按客户筛选 + 就诊时间线）
-- [ ] 预约挂号页面（日期选择 + 类型选择 + 选客户→宠物）
-- [ ] 诊疗记录页面（Drawer 详情）
-- [ ] 药品库存页面（Table + 低库存报警色）
-- [ ] 收费结算页面
-
-### 数据库扩展
-
-- [ ] appointments 表增加 type 字段（treatment/grooming/bath/vaccination/other）
-- [ ] 新建 vaccines 表（pet_id, vaccine_name, administered_date, next_due_date, batch_number）
-- [ ] 新建 reminders 表（pet_id, owner_id, type, title, due_date, status）
-
-### 回访提醒功能
-
-- [ ] 工作台展示「即将到期提醒」列表
-- [ ] 录入疫苗后自动创建回访提醒（如狂犬疫苗一年后提醒）
-- [ ] 一键复制客户手机号 + 生成短信模板文案
-- [ ] 手动创建自定义提醒（如术后7天复诊）
-- [ ] 提醒状态管理（待处理 / 已完成 / 已忽略）
-
-### 将来扩展（服务器版）
-
-- [ ] Node.js 服务端 + PostgreSQL（drizzle-orm 同份 schema，无缝迁移）
-- [ ] 新增 `remote.ts` — Repository 的 HTTP 实现
-- [ ] 自动短信发送（阿里云/腾讯云 SMS API + 服务端定时任务）
-- [ ] A/B 电脑数据同步（在线 remote 模式 + 离线 local 模式 + 同步协议）
-- [ ] 数据从 SQLite 导出迁移到 PostgreSQL
+| 路由 | 页面 |
+|------|------|
+| `/` | 工作台 |
+| `/appointments` | 预约就诊 |
+| `/owners` | 客户列表 |
+| `/owners/:id` | 客户详情 |
+| `/medicines` | 药品库存 |
+| `/bills` | 收费结算 |
+| `/records/:petId` | 诊疗记录（客户详情内进入） |
 
 ## 命令
 
 ```bash
 npm run dev       # 开发模式
 npm run build     # 编译
-npm run package   # 打包 AppImage
+npm run package   # 打包 (electron-builder)
 ```
+
+## 发布
+
+推送 `v*` 标签自动触发 GitHub Actions：
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+自动构建 Linux AppImage / Windows exe / macOS dmg，创建 GitHub Release。
+
+## 将来扩展
+
+- [ ] 办卡业务
+- [ ] 用药回访pipline
+- [ ] Node.js 服务端 + PostgreSQL
+- [ ] 自动短信发送（阿里云/腾讯云 SMS）
+- [ ] A/B 电脑数据同步
+- [ ] 微信小程序用户端

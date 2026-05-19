@@ -1,30 +1,42 @@
 {
   "name": "pet-hospital",
   "version": "1.0.0",
-  "description": "宠物医院管理系统",
+  "description": "宠物医院管理系统 - 桌面版",
+  "author": "pet-hospital",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "preview": "electron-vite preview",
-    "package": "electron-vite build && electron-builder"
+    "postinstall": "@electron/rebuild -m . -o better-sqlite3",
+    "build:main": "node esbuild.main.mjs",
+    "build:preload": "node esbuild.preload.mjs",
+    "build:renderer": "vite build --config vite.renderer.config.ts",
+    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
+    "dev": "npm run build:main && npm run build:preload && node scripts/dev.mjs",
+    "package": "npm run build && electron-builder"
   },
   "license": "MIT",
   "dependencies": {
+    "@ant-design/icons": "^6.2.3",
+    "antd": "^6.4.2",
     "better-sqlite3": "^12.10.0",
+    "dayjs": "^1.11.20",
     "drizzle-orm": "^0.45.2",
+    "pdfjs-dist": "^5.7.284",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/pdfjs-dist": "^2.10.377",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.7.0",
     "drizzle-kit": "^0.31.10",
     "electron": "^34.5.8",
     "electron-builder": "^26.8.1",
-    "electron-vite": "^3.1.0",
     "typescript": "^6.0.3",
     "vite": "^6.4.2"
   }
